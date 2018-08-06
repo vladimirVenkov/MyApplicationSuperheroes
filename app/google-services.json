@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "89055742378",
+    "firebase_url": "https://superheros-da9e2.firebaseio.com",
+    "project_id": "superheros-da9e2",
+    "storage_bucket": "superheros-da9e2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:89055742378:android:8b60ff5bc7d09a36",
+        "android_client_info": {
+          "package_name": "venkov.vladimir.myapplication"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "89055742378-k1n0nut65amqr3aip4ogb7g2gm91suf1.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "venkov.vladimir.myapplication",
+            "certificate_hash": "1bbd73d8802cfd9f689a2db81756134d68f6937f"
+          }
+        },
+        {
+          "client_id": "89055742378-aiavl6uqfr48artlkcmlp28mdv54v3ts.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCTdhImJz44y0s27gXwHrMQvUdkIbg7BcY"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "89055742378-aiavl6uqfr48artlkcmlp28mdv54v3ts.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
