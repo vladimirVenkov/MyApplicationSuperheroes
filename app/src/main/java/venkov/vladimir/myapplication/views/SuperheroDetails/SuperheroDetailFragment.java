@@ -1,4 +1,4 @@
-package venkov.vladimir.myapplication.views;
+package venkov.vladimir.myapplication.views.SuperheroDetails;
 
 
 import android.os.Bundle;
