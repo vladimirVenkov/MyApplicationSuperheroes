@@ -12,6 +12,7 @@ import android.widget.ListView;
 
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import venkov.vladimir.myapplication.AndroidApplication;
 import venkov.vladimir.myapplication.R;
 import venkov.vladimir.myapplication.models.Superhero;
 import venkov.vladimir.myapplication.repositories.FirebaseRepository;
@@ -23,10 +24,12 @@ import venkov.vladimir.myapplication.uiutils.Navigator;
  */
 public class SuperheroesListFragment extends Fragment implements AdapterView.OnItemClickListener {
     private Navigator mNavigator;
+
     private ListView mSuperheroesListView;
-    private ArrayAdapter<String> mSuperHeroesAdapter;
+    private ArrayAdapter<String> mSuperheroesAdapter;
     private FirebaseFirestore mDb;
     private Repository<Superhero> mSuperheroesRepository;
+
 
     public SuperheroesListFragment() {
         // Required empty public constructor
@@ -37,66 +40,94 @@ public class SuperheroesListFragment extends Fragment implements AdapterView.OnI
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view =  inflater.inflate(R.layout.fragment_superheroes_list, container, false);
+        View view = inflater.inflate(R.layout.fragment_superheroes_list, container, false);
+
 
         mDb = FirebaseFirestore.getInstance();
 
         mSuperheroesListView = view.findViewById(R.id.lv_superheroes);
-        mSuperHeroesAdapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_expandable_list_item_1);
+        mSuperheroesAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1);
 
-        mSuperheroesListView.setAdapter(mSuperHeroesAdapter);
+        mSuperheroesListView.setAdapter(mSuperheroesAdapter);
         mSuperheroesListView.setOnItemClickListener(this);
 
-        mSuperheroesRepository = new FirebaseRepository<>(Superhero.class);
+        mSuperheroesRepository =
+                AndroidApplication.getRepository(
+                        Superhero.class,
+                        Superhero[].class
+                );
 
-        mSuperheroesRepository.add(new Superhero("Joro", "The Rabbit"),
-                newSuperhero -> {
-                    mSuperheroesRepository.getAll(superheroes -> {
-                for (Superhero hero : superheroes) {
-                mSuperHeroesAdapter.add(hero.name);
+//                AndroidApplication.getSuperheroRepository();
+
+        mSuperheroesRepository.getAll(superheroes -> {
+            getActivity()
+                    .runOnUiThread(() -> {
+                        for (Superhero superhero : superheroes) {
+                            mSuperheroesAdapter.add(superhero.name);
                         }
                     });
-                } );
+        });
+//        try {
+//            loadSuperheroes();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
 
+//        Repository<Power> powersRepository =
+//                new FirebaseRepository<>(Power.class);
 
-
-//        mSuperheroesRepository.getAll(superheroes -> {
-//            for (Superhero hero : superheroes) {
-//                mSuperHeroesAdapter.add(hero.name);
-//            }
-//        });
-
-
-//        mSuperHeroesAdapter.add("Batman");
-//        mSuperHeroesAdapter.add("Dreg");
-//        mSuperHeroesAdapter.add("Fury");
-
-        //.addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-//@Override
-// public void onComplete(@NonNull Task<QuerySnapshot> task) {
-// List<Superhero> superheroes = task.getResult().toObjects(Superhero.class);
+//
 //        mDb.collection("superheros")
 //                .get()
 //                .addOnCompleteListener(task -> {
-//                    List<Superhero> superheroes = task.getResult().toObjects(Superhero.class);
+//                    List<Superhero> superheroes = task.getResult()
+//                            .toObjects(Superhero.class);
+//
 //                    for (Superhero hero : superheroes) {
-//                        mSuperHeroesAdapter.add(hero.name);
+//                        mSuperheroesAdapter.add(hero.name);
 //                    }
-////                        for (DocumentSnapshot document : task.getResult()) {
-////
-////                        }
 //                });
+//
 //        Superhero hero = new Superhero("Wonder Woman", "Diana Prince");
-////        mDb.collection("superheros")
-////                .add(hero);
+//        mDb.collection("superheros")
+//                .add(hero);
+//
 
         return view;
     }
-    @Override
-    public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-        String superhero = mSuperHeroesAdapter.getItem(position);
-        mNavigator.navigateWith(superhero);
 
+//    private void loadSuperheroes() throws IOException {
+//        OkHttpClient client = new OkHttpClient();
+//        String url = "http://192.168.160.143:8080/api/superheroes";
+//        Request request = new Request.Builder()
+//                .get()
+//                .url(url)
+//                .build();
+//
+//        AsyncRunner.runInBackground(() -> {
+//            Response response = null;
+//            try {
+//                response = client.newCall(request)
+//                        .execute();
+//                String body =
+//                        response.body()
+//                                .string();
+//                Gson gson = new Gson();
+//                Superhero[] superheroes =
+//                        gson.fromJson(body, Superhero[].class);
+//                int b = 5;
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        });
+//
+//    }
+
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        String superhero = mSuperheroesAdapter.getItem(position);
+        mNavigator.navigateWith(superhero);
     }
 
     public static SuperheroesListFragment newInstance() {
@@ -104,6 +135,7 @@ public class SuperheroesListFragment extends Fragment implements AdapterView.OnI
     }
 
     public void setNavigator(Navigator navigator) {
-            mNavigator = navigator;
+        mNavigator = navigator;
     }
+
 }
