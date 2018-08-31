@@ -5,9 +5,28 @@
     android:layout_height="match_parent"
     tools:context=".views.SuperheroesList.SuperheroesListFragment">
 
-    <ListView
-        android:id="@+id/lv_superheroes"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent">
+
+        <ProgressBar
+            android:id="@+id/loading"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
+
+        <EditText
+            android:id="@+id/et_filter"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Enter to search" />
+
+        <ListView
+            android:id="@+id/lv_superheroes"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@id/et_filter"
+            android:visibility="gone" />
+    </RelativeLayout>
 
 </FrameLayout>

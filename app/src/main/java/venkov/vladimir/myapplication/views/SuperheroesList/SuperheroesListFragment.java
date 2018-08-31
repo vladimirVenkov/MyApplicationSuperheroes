@@ -1,141 +1,155 @@
 package venkov.vladimir.myapplication.views.SuperheroesList;
 
 
-import android.os.Bundle;
 import android.app.Fragment;
+import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.ProgressBar;
+import android.widget.Toast;
 
-import com.google.firebase.firestore.FirebaseFirestore;
+import java.util.List;
 
-import venkov.vladimir.myapplication.AndroidApplication;
 import venkov.vladimir.myapplication.R;
 import venkov.vladimir.myapplication.models.Superhero;
-import venkov.vladimir.myapplication.repositories.FirebaseRepository;
-import venkov.vladimir.myapplication.repositories.base.Repository;
-import venkov.vladimir.myapplication.uiutils.Navigator;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class SuperheroesListFragment extends Fragment implements AdapterView.OnItemClickListener {
-    private Navigator mNavigator;
+public class SuperheroesListFragment extends Fragment implements AdapterView.OnItemClickListener,
+        SuperheroesListContracts.View, TextWatcher
+{
+    private SuperheroesListContracts.Navigator mNavigator;
 
     private ListView mSuperheroesListView;
-    private ArrayAdapter<String> mSuperheroesAdapter;
-    private FirebaseFirestore mDb;
-    private Repository<Superhero> mSuperheroesRepository;
+    private ArrayAdapter<Superhero> mSuperheroesAdapter;
 
+    private SuperheroesListContracts.Presenter mPresenter;
+    private ProgressBar mLoadingView;
+    private EditText mFilterEditText;
 
     public SuperheroesListFragment() {
         // Required empty public constructor
     }
 
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_superheroes_list, container, false);
 
-
-        mDb = FirebaseFirestore.getInstance();
-
+        mSuperheroesAdapter = new SuperheroesListAdapter(getContext());
         mSuperheroesListView = view.findViewById(R.id.lv_superheroes);
-        mSuperheroesAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1);
-
         mSuperheroesListView.setAdapter(mSuperheroesAdapter);
         mSuperheroesListView.setOnItemClickListener(this);
 
-        mSuperheroesRepository =
-                AndroidApplication.getRepository(
-                        Superhero.class,
-                        Superhero[].class
-                );
+        mLoadingView = view.findViewById(R.id.loading);
 
-//                AndroidApplication.getSuperheroRepository();
+        mFilterEditText = view.findViewById(R.id.et_filter);
 
-        mSuperheroesRepository.getAll(superheroes -> {
-            getActivity()
-                    .runOnUiThread(() -> {
-                        for (Superhero superhero : superheroes) {
-                            mSuperheroesAdapter.add(superhero.name);
-                        }
-                    });
-        });
-//        try {
-//            loadSuperheroes();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-
-//        Repository<Power> powersRepository =
-//                new FirebaseRepository<>(Power.class);
-
-//
-//        mDb.collection("superheros")
-//                .get()
-//                .addOnCompleteListener(task -> {
-//                    List<Superhero> superheroes = task.getResult()
-//                            .toObjects(Superhero.class);
-//
-//                    for (Superhero hero : superheroes) {
-//                        mSuperheroesAdapter.add(hero.name);
-//                    }
-//                });
-//
-//        Superhero hero = new Superhero("Wonder Woman", "Diana Prince");
-//        mDb.collection("superheros")
-//                .add(hero);
-//
+        mFilterEditText.addTextChangedListener(this);
 
         return view;
     }
 
-//    private void loadSuperheroes() throws IOException {
-//        OkHttpClient client = new OkHttpClient();
-//        String url = "http://192.168.160.143:8080/api/superheroes";
-//        Request request = new Request.Builder()
-//                .get()
-//                .url(url)
-//                .build();
-//
-//        AsyncRunner.runInBackground(() -> {
-//            Response response = null;
-//            try {
-//                response = client.newCall(request)
-//                        .execute();
-//                String body =
-//                        response.body()
-//                                .string();
-//                Gson gson = new Gson();
-//                Superhero[] superheroes =
-//                        gson.fromJson(body, Superhero[].class);
-//                int b = 5;
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//        });
-//
-//    }
-
+    @Override
+    public void onResume() {
+        super.onResume();
+        mPresenter.subscribe(this);
+        mPresenter.loadSuperheroes();
+    }
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        String superhero = mSuperheroesAdapter.getItem(position);
-        mNavigator.navigateWith(superhero);
+        Superhero superhero = mSuperheroesAdapter.getItem(position);
+        mPresenter.selectSuperhero(superhero);
+
     }
 
     public static SuperheroesListFragment newInstance() {
         return new SuperheroesListFragment();
     }
 
-    public void setNavigator(Navigator navigator) {
+    @Override
+    public void setPresenter(SuperheroesListContracts.Presenter presenter) {
+        mPresenter = presenter;
+    }
+
+    @Override
+    public void showSuperheroes(List<Superhero> superheroes) {
+        runOnUi(() -> {
+            mSuperheroesAdapter.clear();
+            mSuperheroesAdapter.addAll(superheroes);
+        });
+    }
+
+    @Override
+    public void showEmptySuperheroesList() {
+        runOnUi(() -> Toast.makeText(getContext(),
+                "No superheroes",
+                Toast.LENGTH_LONG)
+                .show()
+        );
+    }
+
+    @Override
+    public void showError(Exception e) {
+        runOnUi(() ->
+                Toast.makeText(getContext(), "Error: " + e.getMessage(), Toast.LENGTH_LONG)
+                        .show()
+        );
+    }
+
+    @Override
+    public void showLoading() {
+        runOnUi(() -> {
+            mSuperheroesListView.setVisibility(View.GONE);
+            mLoadingView.setVisibility(View.VISIBLE);
+        });
+    }
+
+    @Override
+    public void hideLoading() {
+        runOnUi(() -> {
+            mSuperheroesListView.setVisibility(View.VISIBLE);
+            mLoadingView.setVisibility(View.GONE);
+        });
+    }
+
+    @Override
+    public void showSuperheroDetails(Superhero superhero) {
+        runOnUi(() -> mNavigator.navigateWith(superhero));
+    }
+
+    void setNavigator(SuperheroesListContracts.Navigator navigator) {
         mNavigator = navigator;
+    }
+
+    private void runOnUi(Runnable action) {
+        getActivity()
+                .runOnUiThread(action);
+    }
+
+    @Override
+    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+    }
+
+    @Override
+    public void onTextChanged(CharSequence s, int start, int before, int count) {
+        String pattern = mFilterEditText.getText().toString();
+        mPresenter.filterSuperheroes(pattern);
+    }
+
+    @Override
+    public void afterTextChanged(Editable s) {
+
     }
 
 }

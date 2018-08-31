@@ -25,30 +25,23 @@ public class HttpRepository<T> implements Repository<T> {
     }
 
     @Override
-    public void getAll(Consumer<List<T>> action) {
-        AsyncRunner.runInBackground(() -> {
-            String superheroesJson = null;
-            try {
-                superheroesJson = mHttpRequester.get(mServerUrl);
-                List<T> superheroes = mJsonParser.fromJsonArray(superheroesJson);
-                action.accept(superheroes);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
+    public List<T> getAll() throws IOException {
+        String jsonArray = null;
+        jsonArray = mHttpRequester.get(mServerUrl);
+        return mJsonParser.fromJsonArray(jsonArray);
     }
 
     @Override
-    public void add(T item, Consumer<T> action) {
-        AsyncRunner.runInBackground(() -> {
-            String requestBody = mJsonParser.toJson(item);
-            try {
-                String responseBody = mHttpRequester.post(mServerUrl, requestBody);
-                T createdSuperhero = mJsonParser.fromJson(responseBody);
-                action.accept(createdSuperhero);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
+    public T add(T item) throws IOException {
+        String requestBody = mJsonParser.toJson(item);
+        String responseBody = mHttpRequester.post(mServerUrl, requestBody);
+        return mJsonParser.fromJson(responseBody);
+    }
+
+    @Override
+    public T getById(int id) throws IOException {
+        String url = mServerUrl + "/" + id;
+        String json = mHttpRequester.get(url);
+        return mJsonParser.fromJson(json);
     }
 }

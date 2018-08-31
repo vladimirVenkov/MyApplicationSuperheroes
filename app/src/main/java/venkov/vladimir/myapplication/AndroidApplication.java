@@ -12,6 +12,8 @@ import venkov.vladimir.myapplication.parsers.GsonJsonParser;
 import venkov.vladimir.myapplication.parsers.base.JsonParser;
 import venkov.vladimir.myapplication.repositories.HttpRepository;
 import venkov.vladimir.myapplication.repositories.base.Repository;
+import venkov.vladimir.myapplication.services.HttpSuperheroesService;
+import venkov.vladimir.myapplication.services.base.SuperheroesService;
 
 public class AndroidApplication extends Application {
     public static Repository<Superhero> superheroRepository;
@@ -24,6 +26,8 @@ public class AndroidApplication extends Application {
         repositoriesMap = new HashMap<>();
         jsonParsersMap = new HashMap<>();
     }
+
+    private static SuperheroesService superheroesService;
 
     public static <T> Repository<T> getRepository(Class<T> klass, Class<T[]> arrayKlass) {
         String klassKey = klass.getSimpleName();
@@ -46,6 +50,12 @@ public class AndroidApplication extends Application {
         }
 
         return repositoriesMap.get(klassKey);
+    }
+
+    public static String getServerBaseUrl() {
+
+       // return "http://10.109.72.58:8080/api";
+        return "http://192.168.1.248:8080/api";
     }
 
     private static <T> JsonParser<T> getJsonParser(Class<T> klass, Class<T[]> arrayKlass) {
@@ -81,9 +91,6 @@ public class AndroidApplication extends Application {
         return httpRequester;
     }
 
-    public static String getServerBaseUrl() {
-        return "http://10.109.72.58:8080/api";
-    }
 
     public static JsonParser<Superhero> getSuperheroJsonParser() {
         if (superheroJsonParser == null) {
@@ -94,4 +101,15 @@ public class AndroidApplication extends Application {
         }
         return superheroJsonParser;
     }
+
+    public static SuperheroesService getSuperheroesService() {
+        if (superheroesService == null) {
+            superheroesService = new HttpSuperheroesService(getRepository(Superhero.class, Superhero[].class));
+        }
+        return superheroesService;
+    }
+
+
+
+
 }

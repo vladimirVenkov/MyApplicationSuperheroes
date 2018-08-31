@@ -5,24 +5,24 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 
-
-import com.mikepenz.materialdrawer.Drawer;
-
+import venkov.vladimir.myapplication.AndroidApplication;
 import venkov.vladimir.myapplication.R;
-import venkov.vladimir.myapplication.uiutils.Navigator;
+import venkov.vladimir.myapplication.models.Superhero;
+import venkov.vladimir.myapplication.services.base.SuperheroesService;
 import venkov.vladimir.myapplication.views.BaseDrawerActivity;
-import venkov.vladimir.myapplication.views.SuperheroDetails.SuperheroDetailFragment;
 import venkov.vladimir.myapplication.views.SuperheroDetails.SuperheroDetailsActivity;
+import venkov.vladimir.myapplication.views.SuperheroDetails.SuperheroDetailsFragment;
+import venkov.vladimir.myapplication.views.SuperheroDetails.SuperheroDetailsPresenter;
 
-public class SuperheroesListActivity extends BaseDrawerActivity implements Navigator {
-
-    public static final long IDENTIFIER = 33;
+public class SuperheroesListActivity extends BaseDrawerActivity implements SuperheroesListContracts.Navigator {
+    public static final long IDENTIFIER = 49;
     private SuperheroesListFragment mSuperheroesListFragment;
-    private boolean mIsPhone;
-    private SuperheroDetailFragment mSuperheroDetailsFragment;
-    private Toolbar mToolbar;
-    private Drawer mDrawer;
+    private SuperheroesListContracts.Presenter mSuperheroesListPresenter;
 
+    private boolean mIsPhone;
+    private SuperheroDetailsFragment mSuperheroDetailsFragment;
+    private SuperheroDetailsPresenter mSuperheroDetailsPresenter;
+    private Toolbar mToolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,40 +32,32 @@ public class SuperheroesListActivity extends BaseDrawerActivity implements Navig
         mToolbar = findViewById(R.id.drawer_toolbar);
         setSupportActionBar(mToolbar);
 
+        SuperheroesService superheroesService = AndroidApplication.getSuperheroesService();
+
+        mSuperheroesListPresenter =
+                new SuperheroesListPresenter(superheroesService);
+
         mSuperheroesListFragment = SuperheroesListFragment.newInstance();
         mSuperheroesListFragment.setNavigator(this);
+        mSuperheroesListFragment.setPresenter(mSuperheroesListPresenter);
 
-        mIsPhone = findViewById(R.id.content_details) == null;
+        mIsPhone =
+                findViewById(R.id.content_details) == null;
 
         FragmentTransaction transaction = getFragmentManager()
                 .beginTransaction();
-        transaction.replace(R.id.content, mSuperheroesListFragment);
+
+        transaction
+                .replace(R.id.content, mSuperheroesListFragment);
+
         if (!mIsPhone) {
-            mSuperheroDetailsFragment = SuperheroDetailFragment.newInstance();
-            mSuperheroDetailsFragment.setSuperhero("");//TODO doesn't work empty as in the video 1:09:...
+            mSuperheroDetailsPresenter = new SuperheroDetailsPresenter(superheroesService);
+            mSuperheroDetailsFragment = SuperheroDetailsFragment.newInstance();
+            mSuperheroDetailsFragment.setPresenter(mSuperheroDetailsPresenter);
             transaction.replace(R.id.content_details, mSuperheroDetailsFragment);
         }
 
-        transaction.commit(); // 37:53 video until here
-
-
-
-    }
-
-
-
-    @Override
-    public void navigateWith(String superhero) {
-        if (mIsPhone) {
-            Intent intent = new Intent(
-                    this,
-                    SuperheroDetailsActivity.class
-            );
-            intent.putExtra("SUPERHERO_NAME", superhero);
-            startActivity(intent);
-        } else {
-            mSuperheroDetailsFragment.setSuperhero(superhero);
-        }
+        transaction.commit();
     }
 
     @Override
@@ -77,4 +69,22 @@ public class SuperheroesListActivity extends BaseDrawerActivity implements Navig
     protected Toolbar getDrawerToolbar() {
         return mToolbar;
     }
+
+    @Override
+    public void navigateWith(Superhero superhero) {
+        if (mIsPhone) {
+            Intent intent = new Intent(
+                    this,
+                    SuperheroDetailsActivity.class
+            );
+
+            intent.putExtra(SuperheroDetailsActivity.EXTRA_KEY, superhero);
+
+            startActivity(intent);
+        } else {
+            mSuperheroDetailsPresenter.setSuperheroId(superhero.getId());
+            mSuperheroDetailsPresenter.loadSuperhero();
+        }
+    }
+
 }
