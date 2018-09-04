@@ -6,10 +6,11 @@ import java.util.List;
 import venkov.vladimir.myapplication.models.Superhero;
 
 public interface SuperheroesService {
-    List<Superhero> getAllSuperheroes() throws IOException;
+    List<Superhero> getAllSuperheroes() throws Exception;
 
-    Superhero getDetailsById(int id) throws IOException;
+    Superhero getDetailsById(int id) throws Exception;
 
-    List<Superhero> getFilteredSuperheroes(String pattern) throws IOException;
+    List<Superhero> getFilteredSuperheroes(String pattern) throws Exception;
 
+    Superhero createSuperhero(Superhero superhero) throws Exception;
 }

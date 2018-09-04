@@ -1,5 +1,4 @@
 package venkov.vladimir.myapplication.http;
-
 import java.io.IOException;
 
 import okhttp3.MediaType;
@@ -8,8 +7,11 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-
 public class OkHttpHttpRequester implements HttpRequester {
+    public OkHttpHttpRequester() {
+
+    }
+
     @Override
     public String get(String url) throws IOException {
         Request request = new Request.Builder()
@@ -45,3 +47,4 @@ public class OkHttpHttpRequester implements HttpRequester {
         return responseBody;
     }
 }
+

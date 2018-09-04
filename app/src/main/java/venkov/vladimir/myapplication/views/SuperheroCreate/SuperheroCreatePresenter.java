@@ -1,4 +1,4 @@
-package venkov.vladimir.myapplication.views.SuperheroDetails;
+package venkov.vladimir.myapplication.views.SuperheroCreate;
 
 import javax.inject.Inject;
 
@@ -9,45 +9,44 @@ import venkov.vladimir.myapplication.async.base.SchedulerProvider;
 import venkov.vladimir.myapplication.models.Superhero;
 import venkov.vladimir.myapplication.services.base.SuperheroesService;
 
-public class SuperheroDetailsPresenter
-        implements SuperheroDetailsContracts.Presenter {
+public class SuperheroCreatePresenter implements SuperheroCreateContracts.Presenter {
+
     private final SuperheroesService mSuperheroesService;
     private final SchedulerProvider mSchedulerProvider;
-
-    private SuperheroDetailsContracts.View mView;
-    private int mSuperheroId;
+    private SuperheroCreateContracts.View mView;
 
     @Inject
-    public SuperheroDetailsPresenter(
+    public SuperheroCreatePresenter(
             SuperheroesService superheroesService,
-            SchedulerProvider schedulerProvider
-    ) {
+            SchedulerProvider schedulerProvider) {
         mSuperheroesService = superheroesService;
         mSchedulerProvider = schedulerProvider;
     }
 
     @Override
-    public void subscribe(SuperheroDetailsContracts.View view) {
+    public void subscribe(SuperheroCreateContracts.View view) {
         mView = view;
     }
 
     @Override
-    public void loadSuperhero() {
+    public void unsubscribe() {
+        mView = null;
+    }
+
+    @Override
+    public void save(Superhero superhero) {
         mView.showLoading();
-        Disposable observable = Observable
+        Disposable disposable = Observable
                 .create((ObservableOnSubscribe<Superhero>) emitter -> {
-                    Superhero superhero = mSuperheroesService.getDetailsById(mSuperheroId);
-                    emitter.onNext(superhero);
+                    Superhero createdSuperhero = mSuperheroesService.createSuperhero(superhero);
+                    emitter.onNext(createdSuperhero);
                     emitter.onComplete();
                 })
                 .subscribeOn(mSchedulerProvider.background())
                 .observeOn(mSchedulerProvider.ui())
+                .doOnEach(x -> mView.hideLoading())
                 .doOnError(mView::showError)
-                .subscribe(mView::showSuperhero);
-    }
-
-    @Override
-    public void setSuperheroId(int superheroId) {
-        mSuperheroId = superheroId;
+                .subscribe(s -> mView.navigateToHome());
     }
 }
+

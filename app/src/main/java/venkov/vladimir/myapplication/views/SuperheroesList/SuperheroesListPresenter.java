@@ -1,18 +1,29 @@
 package venkov.vladimir.myapplication.views.SuperheroesList;
 
-import java.io.IOException;
 import java.util.List;
 
-import venkov.vladimir.myapplication.async.AsyncRunner;
+import javax.inject.Inject;
+
+import io.reactivex.Observable;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.disposables.Disposable;
+import venkov.vladimir.myapplication.async.base.SchedulerProvider;
 import venkov.vladimir.myapplication.models.Superhero;
 import venkov.vladimir.myapplication.services.base.SuperheroesService;
 
-public class SuperheroesListPresenter implements SuperheroesListContracts.Presenter {
+public class SuperheroesListPresenter
+        implements SuperheroesListContracts.Presenter {
+
     private final SuperheroesService mSuperheroesService;
+    private final SchedulerProvider mSchedulerProvider;
     private SuperheroesListContracts.View mView;
 
-    public SuperheroesListPresenter(SuperheroesService superheroesService) {
+    @Inject
+    public SuperheroesListPresenter(
+            SuperheroesService superheroesService,
+            SchedulerProvider schedulerProvider) {
         mSuperheroesService = superheroesService;
+        mSchedulerProvider = schedulerProvider;
     }
 
     @Override
@@ -24,33 +35,37 @@ public class SuperheroesListPresenter implements SuperheroesListContracts.Presen
     @Override
     public void loadSuperheroes() {
         mView.showLoading();
-        AsyncRunner.runInBackground(() -> {
-            try {
-                List<Superhero> superheroes =
-                        mSuperheroesService.getAllSuperheroes();
-                presentSuperheroesToView(superheroes);
-            } catch (IOException e) {
-                e.printStackTrace();
-                mView.showError(e);
-            }
-            mView.hideLoading();
-        });
+        Disposable observable = Observable
+                .create((ObservableOnSubscribe<List<Superhero>>) emitter -> {
+                    List<Superhero> superheroes = mSuperheroesService.getAllSuperheroes();
+                    emitter.onNext(superheroes);
+                    emitter.onComplete();
+                })
+                .subscribeOn(mSchedulerProvider.background())
+                .observeOn(mSchedulerProvider.ui())
+                .doFinally(mView::hideLoading)
+                .subscribe(
+                        this::presentSuperheroesToView,
+                        error -> mView.showError(error)
+                );
     }
 
     @Override
     public void filterSuperheroes(String pattern) {
         mView.showLoading();
-        AsyncRunner.runInBackground(() -> {
-            try {
-                List<Superhero> superheroes =
-                        mSuperheroesService.getFilteredSuperheroes(pattern);
-                presentSuperheroesToView(superheroes);
-            } catch (IOException e) {
-                e.printStackTrace();
-                mView.showError(e);
-            }
-            mView.hideLoading();
-        });
+        Disposable observable = Observable
+                .create((ObservableOnSubscribe<List<Superhero>>) emitter -> {
+                    List<Superhero> superheroes = mSuperheroesService.getFilteredSuperheroes(pattern);
+                    emitter.onNext(superheroes);
+                    emitter.onComplete();
+                })
+                .subscribeOn(mSchedulerProvider.background())
+                .observeOn(mSchedulerProvider.ui())
+                .doFinally(mView::hideLoading)
+                .subscribe(
+                        this::presentSuperheroesToView,
+                        error -> mView.showError(error)
+                );
     }
 
     @Override
@@ -65,5 +80,4 @@ public class SuperheroesListPresenter implements SuperheroesListContracts.Presen
             mView.showSuperheroes(superheroes);
         }
     }
-
 }

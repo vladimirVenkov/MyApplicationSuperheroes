@@ -8,7 +8,7 @@ public interface SuperheroDetailsContracts {
 
         void setPresenter(Presenter presenter);
 
-        void showError(Exception e);
+        void showError(Throwable e);
 
         void showLoading();
 
@@ -19,6 +19,7 @@ public interface SuperheroDetailsContracts {
         void subscribe(View view);
 
         void loadSuperhero();
-    }
 
+        void setSuperheroId(int id);
+    }
 }

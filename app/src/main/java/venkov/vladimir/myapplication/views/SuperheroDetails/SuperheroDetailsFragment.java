@@ -8,17 +8,26 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import javax.inject.Inject;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import venkov.vladimir.myapplication.R;
 import venkov.vladimir.myapplication.models.Superhero;
 
-/**
- * A simple {@link Fragment} subclass.
- */
-public class SuperheroDetailsFragment extends Fragment implements SuperheroDetailsContracts.View {
-    private SuperheroDetailsContracts.Presenter mPresenter;
-    private TextView mNameTextView;
-    private TextView mSecretIdentityTextView;
+public class SuperheroDetailsFragment
+        extends Fragment
+        implements SuperheroDetailsContracts.View {
 
+    private SuperheroDetailsContracts.Presenter mPresenter;
+
+    @BindView(R.id.tv_name)
+    TextView mNameTextView;
+
+    @BindView(R.id.tv_secret_identity)
+    TextView mSecretIdentityTextView;
+
+    @Inject
     public SuperheroDetailsFragment() {
         // Required empty public constructor
     }
@@ -29,8 +38,8 @@ public class SuperheroDetailsFragment extends Fragment implements SuperheroDetai
 
         View view = inflater.inflate(R.layout.fragment_superhero_details, container, false);
 
-        mNameTextView = view.findViewById(R.id.tv_name);
-        mSecretIdentityTextView = view.findViewById(R.id.tv_secret_identity);
+        ButterKnife.bind(this, view);
+
         return view;
     }
 
@@ -43,10 +52,8 @@ public class SuperheroDetailsFragment extends Fragment implements SuperheroDetai
 
     @Override
     public void showSuperhero(Superhero superhero) {
-        runOnUi(() -> {
-            mNameTextView.setText(superhero.getName());
-            mSecretIdentityTextView.setText(superhero.getSecretIdentity());
-        });
+        mNameTextView.setText(superhero.getName());
+        mSecretIdentityTextView.setText(superhero.getSecretIdentity());
     }
 
     @Override
@@ -55,7 +62,7 @@ public class SuperheroDetailsFragment extends Fragment implements SuperheroDetai
     }
 
     @Override
-    public void showError(Exception e) {
+    public void showError(Throwable e) {
 
     }
 
@@ -67,13 +74,5 @@ public class SuperheroDetailsFragment extends Fragment implements SuperheroDetai
     @Override
     public void hideLoading() {
 
-    }
-
-    private void runOnUi(Runnable action) {
-        getActivity().runOnUiThread(action);
-    }
-
-    public static SuperheroDetailsFragment newInstance() {
-        return new SuperheroDetailsFragment();
     }
 }

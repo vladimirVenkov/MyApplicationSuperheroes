@@ -1,13 +1,11 @@
 package venkov.vladimir.myapplication.repositories;
 
-import venkov.vladimir.myapplication.async.AsyncRunner;
 import venkov.vladimir.myapplication.http.HttpRequester;
 import venkov.vladimir.myapplication.parsers.base.JsonParser;
 import venkov.vladimir.myapplication.repositories.base.Repository;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.function.Consumer;
 
 public class HttpRepository<T> implements Repository<T> {
     private final HttpRequester mHttpRequester;

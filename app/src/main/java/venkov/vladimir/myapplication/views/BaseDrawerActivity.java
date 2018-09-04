@@ -1,7 +1,6 @@
 package venkov.vladimir.myapplication.views;
 
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 
@@ -11,40 +10,52 @@ import com.mikepenz.materialdrawer.model.DividerDrawerItem;
 import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
 
+import butterknife.BindView;
+import dagger.android.support.DaggerAppCompatActivity;
 import venkov.vladimir.myapplication.R;
 import venkov.vladimir.myapplication.views.SuperheroCreate.SuperheroCreateActivity;
 import venkov.vladimir.myapplication.views.SuperheroesList.SuperheroesListActivity;
 
-public abstract class BaseDrawerActivity extends AppCompatActivity{
+public abstract class BaseDrawerActivity extends DaggerAppCompatActivity {
+
+    @BindView(R.id.drawer_toolbar)
+    Toolbar mToolbar;
+
+    public BaseDrawerActivity() {
+
+    }
 
     public void setupDrawer() {
-        //if you want to update the items at a later time it is recommended to keep it in a variable
         PrimaryDrawerItem listSuperheroesItem = new PrimaryDrawerItem()
                 .withIdentifier(SuperheroesListActivity.IDENTIFIER)
                 .withName("Superheroes");
-        PrimaryDrawerItem createSuperheroesItem = new PrimaryDrawerItem()
-                .withIdentifier(SuperheroCreateActivity.IDENTIFIER)
-                .withIcon(R.drawable.common_full_open_on_phone)
-                .withName("Create");
 
-//create the drawer and remember the `Drawer` result object
+        PrimaryDrawerItem createSuperheroItem = new PrimaryDrawerItem()
+                .withIdentifier(SuperheroCreateActivity.IDENTIFIER)
+                .withIcon(android.R.drawable.btn_plus)
+                .withName("Create superhero");
+
         Drawer drawer = new DrawerBuilder()
                 .withActivity(this)
-                .withToolbar(getDrawerToolbar())
+                .withToolbar(mToolbar)
                 .addDrawerItems(
                         listSuperheroesItem,
                         new DividerDrawerItem(),
-                        createSuperheroesItem
+                        createSuperheroItem
                 )
                 .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
                     @Override
-                    public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
-                        // do something with the clicked item :D
+                    public boolean onItemClick(
+                            View view,
+                            int position,
+                            IDrawerItem drawerItem) {
                         long identifier = drawerItem.getIdentifier();
+
                         if (getIdentifier() == identifier) {
                             return false;
                         }
-                            Intent intent = getNextIntent(identifier);
+
+                        Intent intent = getNextIntent(identifier);
                         if (intent == null) {
                             return false;
                         }
@@ -55,23 +66,20 @@ public abstract class BaseDrawerActivity extends AppCompatActivity{
                 })
                 .build();
     }
-//TODO 1:22:01
-    private Intent getNextIntent(long identifier) {
-        if (identifier == SuperheroesListActivity.IDENTIFIER){
-            return new Intent(BaseDrawerActivity.this,
-                    SuperheroesListActivity.class);
 
-        }else if(identifier == SuperheroCreateActivity.IDENTIFIER) {
-            return new Intent(BaseDrawerActivity.this,
-                    SuperheroCreateActivity.class);
+    private Intent getNextIntent(long identifier) {
+        if (identifier == SuperheroCreateActivity.IDENTIFIER) {
+            return new Intent(this, SuperheroCreateActivity.class);
         }
 
         return null;
     }
 
-    protected abstract long getIdentifier();
+    public Toolbar getToolbar() {
+        return mToolbar;
+    }
 
-    protected abstract Toolbar getDrawerToolbar();
+    protected abstract long getIdentifier();
 
     @Override
     protected void onStart() {

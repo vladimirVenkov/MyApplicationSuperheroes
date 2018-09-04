@@ -25,11 +25,6 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.android.support.constraint:constraint-layout:1.1.2'
-    implementation 'com.google.firebase:firebase-core:16.0.1'
-    implementation 'com.google.firebase:firebase-firestore:17.0.4'
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.2'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 
     implementation 'com.google.code.gson:gson:2.8.5'
 
@@ -39,10 +34,37 @@ dependencies {
         transitive = true
     }
 
+    implementation 'com.squareup.picasso:picasso:2.71828'
+
+
+
+    //Dependency Injection Butter Knife
+    implementation 'com.jakewharton:butterknife:8.8.1'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
+
+    // Dagger dependencies
+    implementation "com.google.dagger:dagger:2.17"
+    implementation "com.google.dagger:dagger-android:2.17"
+    implementation "com.google.dagger:dagger-android-support:2.17"
+    annotationProcessor "com.google.dagger:dagger-android-processor:2.17"
+    annotationProcessor "com.google.dagger:dagger-compiler:2.17"
+
+    // ReactiveX
+    implementation 'io.reactivex.rxjava2:rxandroid:2.1.0'
+    implementation 'io.reactivex.rxjava2:rxjava:2.2.1'
+
+    //testing
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+
+    // UI
     implementation "com.android.support:appcompat-v7:26.1.0"
     implementation "com.android.support:recyclerview-v7:26.1.0"
-    implementation "com.android.support:support-annotations:27.1.1"
+    implementation "com.android.support:support-annotations:26.1.0"
     implementation "com.android.support:design:26.1.0"
+    testImplementation "org.mockito:mockito-core:2.21.0"
+
 }
 
 apply plugin: 'com.google.gms.google-services'

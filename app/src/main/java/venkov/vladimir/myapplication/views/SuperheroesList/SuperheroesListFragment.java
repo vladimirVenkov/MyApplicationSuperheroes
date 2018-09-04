@@ -3,38 +3,46 @@ package venkov.vladimir.myapplication.views.SuperheroesList;
 
 import android.app.Fragment;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import java.util.List;
 
+import javax.inject.Inject;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnTextChanged;
 import venkov.vladimir.myapplication.R;
 import venkov.vladimir.myapplication.models.Superhero;
 
-/**
- * A simple {@link Fragment} subclass.
- */
-public class SuperheroesListFragment extends Fragment implements AdapterView.OnItemClickListener,
-        SuperheroesListContracts.View, TextWatcher
-{
+public class SuperheroesListFragment
+        extends Fragment
+        implements SuperheroesListContracts.View, SuperheroesAdapter.OnSuperheroClickListener {
     private SuperheroesListContracts.Navigator mNavigator;
 
-    private ListView mSuperheroesListView;
-    private ArrayAdapter<Superhero> mSuperheroesAdapter;
+    @BindView(R.id.lv_superheroes)
+    RecyclerView mSuperheroesView;
+
+    @BindView(R.id.loading)
+    ProgressBar mLoadingView;
+
+    @BindView(R.id.et_filter)
+    EditText mFilterEditText;
+
+    @Inject
+    SuperheroesAdapter mSuperheroesAdapter;
 
     private SuperheroesListContracts.Presenter mPresenter;
-    private ProgressBar mLoadingView;
-    private EditText mFilterEditText;
+    private GridLayoutManager mSuperheroesViewLayoutManager;
 
+    @Inject
     public SuperheroesListFragment() {
         // Required empty public constructor
     }
@@ -44,17 +52,14 @@ public class SuperheroesListFragment extends Fragment implements AdapterView.OnI
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_superheroes_list, container, false);
 
-        mSuperheroesAdapter = new SuperheroesListAdapter(getContext());
-        mSuperheroesListView = view.findViewById(R.id.lv_superheroes);
-        mSuperheroesListView.setAdapter(mSuperheroesAdapter);
-        mSuperheroesListView.setOnItemClickListener(this);
+        // ButterKnife is applied
+        ButterKnife.bind(this, view);
 
-        mLoadingView = view.findViewById(R.id.loading);
+        mSuperheroesAdapter.setOnSuperheroClickListener(this);
 
-        mFilterEditText = view.findViewById(R.id.et_filter);
-
-        mFilterEditText.addTextChangedListener(this);
-
+        mSuperheroesView.setAdapter(mSuperheroesAdapter);
+        mSuperheroesViewLayoutManager = new GridLayoutManager(getContext(), 2);
+        mSuperheroesView.setLayoutManager(mSuperheroesViewLayoutManager);
         return view;
     }
 
@@ -66,90 +71,60 @@ public class SuperheroesListFragment extends Fragment implements AdapterView.OnI
     }
 
     @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        Superhero superhero = mSuperheroesAdapter.getItem(position);
-        mPresenter.selectSuperhero(superhero);
-
-    }
-
-    public static SuperheroesListFragment newInstance() {
-        return new SuperheroesListFragment();
-    }
-
-    @Override
     public void setPresenter(SuperheroesListContracts.Presenter presenter) {
         mPresenter = presenter;
     }
 
     @Override
     public void showSuperheroes(List<Superhero> superheroes) {
-        runOnUi(() -> {
-            mSuperheroesAdapter.clear();
-            mSuperheroesAdapter.addAll(superheroes);
-        });
+        mSuperheroesAdapter.clear();
+        mSuperheroesAdapter.addAll(superheroes);
+        mSuperheroesAdapter.notifyDataSetChanged();
     }
 
     @Override
     public void showEmptySuperheroesList() {
-        runOnUi(() -> Toast.makeText(getContext(),
+        Toast.makeText(getContext(),
                 "No superheroes",
                 Toast.LENGTH_LONG)
-                .show()
-        );
+                .show();
     }
 
     @Override
-    public void showError(Exception e) {
-        runOnUi(() ->
-                Toast.makeText(getContext(), "Error: " + e.getMessage(), Toast.LENGTH_LONG)
-                        .show()
-        );
+    public void showError(Throwable e) {
+        Toast.makeText(getContext(), "Error: " + e.getMessage(), Toast.LENGTH_LONG)
+                .show();
     }
 
     @Override
     public void showLoading() {
-        runOnUi(() -> {
-            mSuperheroesListView.setVisibility(View.GONE);
-            mLoadingView.setVisibility(View.VISIBLE);
-        });
+        mSuperheroesView.setVisibility(View.GONE);
+        mLoadingView.setVisibility(View.VISIBLE);
     }
 
     @Override
     public void hideLoading() {
-        runOnUi(() -> {
-            mSuperheroesListView.setVisibility(View.VISIBLE);
-            mLoadingView.setVisibility(View.GONE);
-        });
+        mSuperheroesView.setVisibility(View.VISIBLE);
+        mLoadingView.setVisibility(View.GONE);
     }
 
     @Override
     public void showSuperheroDetails(Superhero superhero) {
-        runOnUi(() -> mNavigator.navigateWith(superhero));
+        mNavigator.navigateWith(superhero);
     }
 
     void setNavigator(SuperheroesListContracts.Navigator navigator) {
         mNavigator = navigator;
     }
 
-    private void runOnUi(Runnable action) {
-        getActivity()
-                .runOnUiThread(action);
-    }
-
-    @Override
-    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-    }
-
-    @Override
-    public void onTextChanged(CharSequence s, int start, int before, int count) {
+    @OnTextChanged(R.id.et_filter)
+    public void onTextChanged() {
         String pattern = mFilterEditText.getText().toString();
         mPresenter.filterSuperheroes(pattern);
     }
 
     @Override
-    public void afterTextChanged(Editable s) {
-
+    public void onClick(Superhero superhero) {
+        mPresenter.selectSuperhero(superhero);
     }
-
 }

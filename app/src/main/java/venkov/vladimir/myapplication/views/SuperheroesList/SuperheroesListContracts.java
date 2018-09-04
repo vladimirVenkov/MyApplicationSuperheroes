@@ -12,7 +12,7 @@ public interface SuperheroesListContracts {
 
         void showEmptySuperheroesList();
 
-        void showError(Exception e);
+        void showError(Throwable e);
 
         void showLoading();
 
@@ -34,5 +34,4 @@ public interface SuperheroesListContracts {
     interface Navigator {
         void navigateWith(Superhero superhero);
     }
-
 }
